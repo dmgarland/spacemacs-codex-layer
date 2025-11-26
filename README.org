@@ -1,0 +1,49 @@
+#+TITLE: Codex Layer
+#+AUTHOR: Daniel Garland, ChatGPT
+#+STARTUP: content
+
+* Description
+This layer integrates the OpenAI Codex CLI with Spacemacs, allowing
+you to send code regions, file paths, or context directly to Codex
+running in an interactive terminal buffer.
+
+I've not made a Spacemacs layer before, so as always PRs/feedback welcome.
+
+Requires a ChatGPT Plus plan or above.
+
+* Features
+- Run Codex in the project root (`SPC a c !`)
+- Send regions (`SPC a c r`)
+- Send file path or file+line (`SPC a c f`, `SPC a c F`)
+- Auto-detects and uses vterm if available, else ansi-term
+- Preserves insert mode focus
+
+* Installation
+1. Install codex `npm i -g @openai/codex`.
+2. Clone this repo into =~/.emacs.d/private/codex=
+3. Add `codex` to your =dotspacemacs-configuration-layers= list.
+dotspacemacs-configuration-layers
+'(
+  codex
+)
+4. Restart Spacemacs.
+
+* Dependencies
+- Spacemacs
+- Projectile
+- Either =vterm= or =ansi-term=
+- Codex CLI available on your system PATH.
+
+* Configuration
+Set `codex/vterm-available-p` to force or disable vterm detection if needed.
+
+* Key Bindings
+| Key          | Description                  |
+|---------------+------------------------------|
+| SPC a c !     | Launch Codex terminal        |
+| SPC a c r     | Send region to Codex         |
+| SPC a c f     | Send current file path       |
+| SPC a c F     | Send file + line (editable)  |
+
+* Usage
+Start by launching Codex terminal. Enter your instructions, or use the shortcuts to specify which file, line or region to give context to the agent.
