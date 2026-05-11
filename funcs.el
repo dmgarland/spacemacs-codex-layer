@@ -125,7 +125,7 @@
           (split-string (buffer-string) "\n" t))))))
 
 (defun codex--filesystem-workspace-files (root)
-  "Return non-hidden regular files under ROOT."
+  "Return regular files under ROOT."
   (mapcar (lambda (path)
             (file-relative-name path root))
           (directory-files-recursively root ".*" nil)))
@@ -148,7 +148,7 @@
     (if (and codex--workspace-file-cache
              (equal root codex--workspace-file-cache-root))
         codex--workspace-file-cache
-      (message "🜏 Indexing workspace files…")
+      (message "🜏 Indexing workspace files...")
       (setq codex--workspace-file-cache-root root
             codex--workspace-file-cache
             (delete-dups (codex--collect-workspace-files root))))))
@@ -317,9 +317,13 @@
 
 (defun codex/file-context-token (relative-path)
   "Return the inline Codex file token for RELATIVE-PATH."
-  (let ((safe-path (if (string-match-p "[[:space:]\"]" relative-path)
+  (let ((safe-path (if (string-match-p "[^[:alnum:]/._-]" relative-path)
                        (format "\"%s\""
-                               (replace-regexp-in-string "\"" "\\\\\"" relative-path t t))
+                               (replace-regexp-in-string
+                                "\""
+                                "\\\\\""
+                                (replace-regexp-in-string "\\\\" "\\\\\\\\" relative-path t t)
+                                t t))
                      relative-path)))
     (format "@%s" safe-path)))
 
