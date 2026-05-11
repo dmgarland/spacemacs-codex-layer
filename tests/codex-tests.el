@@ -23,32 +23,38 @@
 
 (ert-deftest codex-test-collect-workspace-files-excludes-ignored-paths ()
   (let ((root (make-temp-file "codex-project" t)))
-    (dolist (path '("src/app.ts"
-                    "node_modules/pkg/index.js"
-                    "build/output.js"
-                    "images/logo.png"))
-      (make-directory (file-name-directory (expand-file-name path root)) t)
-      (with-temp-file (expand-file-name path root)
-        (insert "test"))))
-    (let ((files (codex--collect-workspace-files root)))
-      (should (member "src/app.ts" files))
-      (should-not (member "node_modules/pkg/index.js" files))
-      (should-not (member "build/output.js" files))
-      (should-not (member "images/logo.png" files))))
+    (unwind-protect
+        (progn
+          (dolist (path '("src/app.ts"
+                          "node_modules/pkg/index.js"
+                          "build/output.js"
+                          "images/logo.png"))
+            (make-directory (file-name-directory (expand-file-name path root)) t)
+            (with-temp-file (expand-file-name path root)
+              (insert "test")))
+          (let ((files (codex--collect-workspace-files root)))
+            (should (member "src/app.ts" files))
+            (should-not (member "node_modules/pkg/index.js" files))
+            (should-not (member "build/output.js" files))
+            (should-not (member "images/logo.png" files))))
+      (delete-directory root t))))
 
 (ert-deftest codex-test-gitignore-files-are-excluded-when-git-is-available ()
   (skip-unless (executable-find "git"))
   (let ((root (make-temp-file "codex-project" t)))
-    (should (zerop (call-process "git" nil nil nil "-C" root "init" "-q")))
-    (with-temp-file (expand-file-name ".gitignore" root)
-      (insert "ignored.js\n"))
-    (with-temp-file (expand-file-name "ignored.js" root)
-      (insert "ignored"))
-    (with-temp-file (expand-file-name "kept.js" root)
-      (insert "kept"))
-    (let ((files (codex--collect-workspace-files root)))
-      (should (member "kept.js" files))
-      (should-not (member "ignored.js" files)))))
+    (unwind-protect
+        (progn
+          (should (zerop (call-process "git" nil nil nil "-C" root "init" "-q")))
+          (with-temp-file (expand-file-name ".gitignore" root)
+            (insert "ignored.js\n"))
+          (with-temp-file (expand-file-name "ignored.js" root)
+            (insert "ignored"))
+          (with-temp-file (expand-file-name "kept.js" root)
+            (insert "kept"))
+          (let ((files (codex--collect-workspace-files root)))
+            (should (member "kept.js" files))
+            (should-not (member "ignored.js" files))))
+      (delete-directory root t))))
 
 (ert-deftest codex-test-duplicate-filenames-remain-distinct ()
   (let* ((root (make-temp-file "codex-project" t))
@@ -60,11 +66,14 @@
   (let* ((root (make-temp-file "codex-project" t))
          (path "src/orphan.ts")
          (absolute-path (expand-file-name path root)))
-    (make-directory (file-name-directory absolute-path) t)
-    (with-temp-file absolute-path
-      (insert "export const orphan = true;\n"))
-    (delete-file absolute-path)
-    (should-not (codex/file-context-token-valid-p path root))))
+    (unwind-protect
+        (progn
+          (make-directory (file-name-directory absolute-path) t)
+          (with-temp-file absolute-path
+            (insert "export const orphan = true;\n"))
+          (delete-file absolute-path)
+          (should-not (codex/file-context-token-valid-p path root)))
+      (delete-directory root t))))
 
 (ert-deftest codex-test-multiple-selection-does-not-send-duplicates ()
   (let ((sent nil)

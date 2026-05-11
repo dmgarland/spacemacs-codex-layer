@@ -128,7 +128,7 @@
   "Return non-hidden regular files under ROOT."
   (mapcar (lambda (path)
             (file-relative-name path root))
-          (directory-files-recursively root ".*" t)))
+          (directory-files-recursively root ".*" nil)))
 
 (defun codex--collect-workspace-files (root)
   "Collect workspace files for ROOT, respecting ignore rules when possible."
