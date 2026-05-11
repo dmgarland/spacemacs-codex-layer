@@ -30,6 +30,8 @@
 (defvar codex--minibuffer-delete-command nil)
 (defconst codex--file-context-empty-state "<No workspace files match your search>"
   "Sentinel row shown when the picker has no file matches.")
+(defconst codex--token-backslash-regexp "\\\\")
+(defconst codex--token-backslash-replacement "\\\\\\\\")
 
 (defvar-local codex--selected-context-files nil
   "Workspace-relative file paths already inserted into the current Codex buffer.")
@@ -259,8 +261,9 @@
                   (right-score (codex--file-search-score query right recent-files active-file root)))
               (cl-loop for left-part in left-score
                        for right-part in right-score
-                       thereis (cond ((< left-part right-part) t)
-                                     ((> left-part right-part) nil))))))))
+                       if (< left-part right-part) return t
+                       if (> left-part right-part) return nil
+                       finally return nil))))))
 
 (defun codex--selected-file-badge (relative-path)
   "Return a status badge for RELATIVE-PATH when one is needed."
@@ -317,10 +320,16 @@
 
 (defun codex--escape-path-for-token (relative-path)
   "Escape RELATIVE-PATH so it can be wrapped in a quoted Codex token."
+  ;; Double backslashes before escaping quotes so quoted tokens keep the
+  ;; original path characters when Codex parses them back out.
   (replace-regexp-in-string
    "\""
    "\\\\\""
-   (replace-regexp-in-string "\\\\" "\\\\\\\\" relative-path t t)
+   (replace-regexp-in-string
+    codex--token-backslash-regexp
+    codex--token-backslash-replacement
+    relative-path
+    t t)
    t t))
 
 (defun codex/file-context-token (relative-path)
