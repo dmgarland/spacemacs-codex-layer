@@ -315,15 +315,19 @@
           (completing-read prompt collection nil t nil history))
       (quit (if codex--minibuffer-back-triggered :back nil)))))
 
+(defun codex--escape-path-for-token (relative-path)
+  "Escape RELATIVE-PATH so it can be wrapped in a quoted Codex token."
+  (replace-regexp-in-string
+   "\""
+   "\\\\\""
+   (replace-regexp-in-string "\\\\" "\\\\\\\\" relative-path t t)
+   t t))
+
 (defun codex/file-context-token (relative-path)
   "Return the inline Codex file token for RELATIVE-PATH."
   (let ((safe-path (if (string-match-p "[^[:alnum:]/._-]" relative-path)
                        (format "\"%s\""
-                               (replace-regexp-in-string
-                                "\""
-                                "\\\\\""
-                                (replace-regexp-in-string "\\\\" "\\\\\\\\" relative-path t t)
-                                t t))
+                               (codex--escape-path-for-token relative-path))
                      relative-path)))
     (format "@%s" safe-path)))
 
