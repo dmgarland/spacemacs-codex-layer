@@ -62,6 +62,12 @@
     (should (equal (codex--sort-files-for-query "Button" files root)
                    '("src/Button.tsx" "tests/Button.tsx")))))
 
+(ert-deftest codex-test-sort-handles-string-tiebreakers ()
+  (let* ((root (make-temp-file "codex-project" t))
+         (files '(".eslintrc.cjs" ".prettierrc.cjs")))
+    (should (equal (codex--sort-files-for-query ".cjs" files root)
+                   '(".eslintrc.cjs" ".prettierrc.cjs")))))
+
 (ert-deftest codex-test-deleted-token-is-reported-invalid ()
   (let* ((root (make-temp-file "codex-project" t))
          (path "src/orphan.ts")

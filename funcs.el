@@ -248,6 +248,16 @@
                       (downcase relative-path))
       (codex--subsequence-score (downcase query) (downcase relative-path))))
 
+(defun codex--score-part-less-p (left-part right-part)
+  "Return non-nil when LEFT-PART should sort before RIGHT-PART."
+  (cond
+   ((and (numberp left-part) (numberp right-part))
+    (< left-part right-part))
+   ((and (stringp left-part) (stringp right-part))
+    (string-lessp left-part right-part))
+   (t
+    (string-lessp (format "%s" left-part) (format "%s" right-part)))))
+
 (defun codex--sort-files-for-query (query files root)
   "Return FILES filtered and sorted for QUERY within ROOT."
   (let ((recent-files (codex--recent-workspace-files root))
@@ -261,8 +271,8 @@
                   (right-score (codex--file-search-score query right recent-files active-file root)))
               (cl-loop for left-part in left-score
                        for right-part in right-score
-                       if (< left-part right-part) return t
-                       if (> left-part right-part) return nil
+                       if (codex--score-part-less-p left-part right-part) return t
+                       if (codex--score-part-less-p right-part left-part) return nil
                        finally return nil))))))
 
 (defun codex--selected-file-badge (relative-path)
