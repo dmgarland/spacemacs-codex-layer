@@ -1,8 +1,5 @@
 ;;; -*- lexical-binding: t -*-
 ;;; Codex layer functions — prefers vterm, falls back to ansi-term
-(defconst codex-packages
-  '((projectile :location built-in)))
-
 (defvar codex--last-buffer nil
   "Holds the buffer of the last Codex terminal session.")
 

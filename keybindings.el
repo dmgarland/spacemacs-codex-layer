@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t; -*-
 (spacemacs/declare-prefix "a c" "codex")
 
 (spacemacs/set-leader-keys
